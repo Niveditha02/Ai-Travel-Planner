@@ -171,3 +171,16 @@ h2 {
     @apply bg-background text-foreground;
   }
 }
+
+/* Fix Geoapify layout conflicts with Tailwind */
+.geoapify-autocomplete-input {
+  width: 100% !important;
+  /* Forces the input to fill the full width */
+  box-sizing: border-box !important;
+}
+
+.geoapify-geocoder-autocomplete-container {
+  width: 100%;
+  /* Ensures the absolute positioned dropdown aligns correctly */
+  position: relative;
+}
