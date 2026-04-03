@@ -28,7 +28,8 @@ function CreateTrip() {
     }, [formData]);
 
     const GenerateTrip = () => {
-        if (formData?.noOfDays > 5 && !formData?.Location || !formData?.budget || !formData?.traveler) {
+        if (formData?.noOfDays > 5 && !formData?.Location ||
+            !formData?.budget || !formData?.traveler) {
             toast("Please fill all the fields")
             return;
         }
