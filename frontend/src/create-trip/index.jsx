@@ -29,10 +29,6 @@ function CreateTrip() {
     const [openDialog, setOpenDialog] = useState(false);
     const [loading, setLoading] = useState(false);
 
-
-
-
-
     const handleInputChange = (name, value) => {
         if (name === "noOfDays" && value > 5) {
             console.log("Please enter trip days less than 5");
@@ -68,7 +64,6 @@ function CreateTrip() {
     }
 
     const GenerateTrip = async () => {
-
         const user = localStorage.getItem("user");
         if (!user) {
             setOpenDialog(true);
@@ -81,12 +76,21 @@ function CreateTrip() {
 
         setLoading(true);
         try {
-            // We pass the formData object directly to our new backend service
+            // 1. Generate the trip with AI
             const result = await chatSession.sendMessage(formData);
-            console.log("--- AI GENERATED TRIP PLAN ---");
-            console.log(result.response.text());
-            console.log("-------------------------------");
-            toast("Trip generated successfully! Check your console.");
+            const generatedPlan = result.response.text();
+
+            // 2. Get the logged-in user's email
+            const parsedUser = JSON.parse(user);
+
+            // 3. SECURELY send it to your backend to save!
+            await axios.post('http://localhost:3002/api/save-trip', {
+                userEmail: parsedUser.email,
+                formData: formData,
+                tripPlan: generatedPlan
+            });
+
+            toast("Trip generated and securely saved successfully!");
         } catch (error) {
             console.error("Generation Error:", error);
             toast("Something went wrong while generating the trip.");
@@ -94,6 +98,7 @@ function CreateTrip() {
             setLoading(false);
         }
     }
+
 
 
 
@@ -171,9 +176,9 @@ function CreateTrip() {
 
             {/* Generate Trip */}
             <div className='my-10 flex justify-end'>
-                <Button 
+                <Button
                     disabled={loading}
-                    onClick={GenerateTrip} 
+                    onClick={GenerateTrip}
                 >
                     {loading ? "Generating..." : "Generate Trip"}
                 </Button>
@@ -199,12 +204,16 @@ function CreateTrip() {
                             </p>
                         </DialogDescription>
                     </DialogHeader>
-                    <Button onClick={login}
+                    <Button
+                        disabled={loading}
+                        onClick={login}
                         className="w-full mt-6 h-11 flex items-center justify-center gap-3 transition-all hover:bg-slate-50"
                         variant="outline"
                     >
-                        <FcGoogle className='h-7 w-7' />
-                        Sign in with Google
+                        <>
+                            <FcGoogle className='h-7 w-7' />
+                            Sign in with Google
+                        </>
                     </Button>
                 </DialogContent>
             </Dialog>
