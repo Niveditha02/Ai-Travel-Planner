@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from '@react-oauth/google';
+import { useNavigate } from 'react-router-dom';
 
 
 import axios from 'axios';
@@ -21,6 +22,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { chatSession } from '@/service/AIModal';
+import { useNavigate } from 'react-router-dom';
 
 
 function CreateTrip() {
@@ -28,6 +30,7 @@ function CreateTrip() {
     const [formData, setFormData] = useState({});
     const [openDialog, setOpenDialog] = useState(false);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const handleInputChange = (name, value) => {
         if (name === "noOfDays" && value > 5) {
@@ -98,11 +101,6 @@ function CreateTrip() {
             setLoading(false);
         }
     }
-
-
-
-
-
 
     return (
         <div className="px-5 mt-10 sm:px-10 md:px-32 lg:px-56 xl:px-72">
