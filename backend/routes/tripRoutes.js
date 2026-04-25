@@ -9,21 +9,22 @@ const Trip = require('../schemas/TripSchema');
  */
 router.post('/generate-trip', async (req, res) => {
     try {
-        const formData = req.body;
+        const { Location, noOfDays, budget, traveler, userEmail } = req.body;
 
         // Basic validation
-        if (!formData.Location || !formData.noOfDays || !formData.budget || !formData.traveler) {
+        if (!Location || !noOfDays || !budget || !traveler || !userEmail) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        const tripPlan = await aiService.generateTrip(formData);
+        const tripPlan = await aiService.generateTrip({ Location, noOfDays, budget, traveler });
 
-        // --- NEW: Save the trip to passing to MongoDB ---
+        // --- NEW: Save the trip to MongoDB ---
         const newTrip = new Trip({
-            location: formData.Location,
-            noOfDays: formData.noOfDays,
-            budget: formData.budget,
-            traveler: formData.traveler,
+            userEmail: userEmail,
+            location: Location,
+            noOfDays: noOfDays,
+            budget: budget,
+            traveler: traveler,
             tripPlan: tripPlan
         });
         await newTrip.save();
@@ -32,6 +33,22 @@ router.post('/generate-trip', async (req, res) => {
         res.json({ result: tripPlan, tripId: newTrip._id });
     } catch (error) {
         console.error('Route error:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * GET /api/get-trip/:id
+ */
+router.get('/get-trip/:id', async (req, res) => {
+    try {
+        const trip = await Trip.findById(req.params.id);
+        if (!trip) {
+            return res.status(404).json({ error: 'Trip not found' });
+        }
+        res.json(trip);
+    } catch (error) {
+        console.error('Fetch error:', error.message);
         res.status(500).json({ error: error.message });
     }
 });

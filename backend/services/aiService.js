@@ -11,13 +11,25 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const generateTrip = async (formData) => {
     const { Location, noOfDays, budget, traveler } = formData;
 
-    const prompt = `Generate Travel Plan for Location: ${Location}, for ${noOfDays} Days for ${traveler} with a ${budget} budget, Give me a Hotels options list with HotelName, Hotel address, Price, hotel image url, geo coordinates, rating, descriptions and suggest itinerary with placename, Place Details, Place Image Url, Geo Coordinates, ticket Pricing, rating, Time travel each of the location for ${noOfDays} days with each day plan with best time to visit in JSON format.`;
+    const prompt = `Generate a Travel Plan for Location: ${Location}, for ${noOfDays} Days for ${traveler} with a ${budget} budget.
+    Return ONLY a valid JSON object using this exact structure, with no markdown, no conversational text, and no preamble:
+    {
+      "hotelOptions": [
+        { "hotelName": "", "hotelAddress": "", "price": "", "hotelImageUrl": "", "geoCoordinates": "", "rating": "", "description": "" }
+      ],
+      "itinerary": [
+        { "day": 1, "theme": "", "places": [
+            { "placeName": "", "placeDetails": "", "placeImageUrl": "", "geoCoordinates": "", "ticketPricing": "", "rating": "", "timeToVisit": "" }
+        ]}
+      ]
+    }`;
 
     try {
         const response = await axios.post(
             'https://openrouter.ai/api/v1/chat/completions',
             {
                 model: 'meta-llama/llama-3.1-8b-instruct',
+                response_format: { type: 'json_object' },
                 messages: [
                     {
                         role: 'user',

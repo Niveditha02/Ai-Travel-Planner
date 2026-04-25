@@ -1,6 +1,6 @@
 
 // Geoapify Geocoder Autocomplete
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import { GeoapifyGeocoderAutocomplete, GeoapifyContext } from '@geoapify/react-geocoder-autocomplete';
 import '@geoapify/geocoder-autocomplete/styles/minimal.css';
 import { Input } from '@/components/ui/input';
@@ -9,9 +9,6 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from '@react-oauth/google';
-import { useNavigate } from 'react-router-dom';
-
-
 import axios from 'axios';
 import {
     Dialog,
@@ -79,21 +76,24 @@ function CreateTrip() {
 
         setLoading(true);
         try {
-            // 1. Generate the trip with AI
-            const result = await chatSession.sendMessage(formData);
-            const generatedPlan = result.response.text();
-
-            // 2. Get the logged-in user's email
             const parsedUser = JSON.parse(user);
 
-            // 3. SECURELY send it to your backend to save!
-            await axios.post('http://localhost:3002/api/save-trip', {
-                userEmail: parsedUser.email,
-                formData: formData,
-                tripPlan: generatedPlan
+            // 1. Generate and Save the trip via Backend in one step
+            const result = await chatSession.sendMessage({
+                ...formData,
+                userEmail: parsedUser.email
             });
 
-            toast("Trip generated and securely saved successfully!");
+            console.log("Trip result:", result);
+            const tripId = result?.response?.tripId;
+
+            if (tripId) {
+                toast("Trip generated and saved successfully!");
+                // 2. Navigate to view-trip page
+                navigate('/view-trip/' + tripId);
+            } else {
+                throw new Error("No trip ID returned from backend");
+            }
         } catch (error) {
             console.error("Generation Error:", error);
             toast("Something went wrong while generating the trip.");

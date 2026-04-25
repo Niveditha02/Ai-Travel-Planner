@@ -13,10 +13,11 @@ export const chatSession = {
         }
       });
 
-      if (response.data && response.data.result) {
+      if (response.data) {
         return {
           response: {
-            text: () => response.data.result
+            text: () => response.data.result,
+            tripId: response.data.tripId
           }
         };
       } else {
