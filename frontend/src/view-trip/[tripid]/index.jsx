@@ -142,7 +142,7 @@ function ViewTrip() {
                             </div>
                             <div className="flex-1">
                                 <p className="text-xs text-purple-600 font-semibold uppercase tracking-wider">Travelers</p>
-                                <p className="text-sm font-bold text-slate-800">{trip?.traveler} {trip?.traveler === 1 ? 'Person' : 'People'}</p>
+                                <p className="text-sm font-bold text-slate-800">{trip?.traveler}</p>
                             </div>
                         </div>
                     </div>
@@ -160,7 +160,7 @@ function ViewTrip() {
                                 </div>
                             </div>
                             <div className="p-6">
-                                <Hotels tripPlan={parsedTripPlan} />
+                                <Hotels tripPlan={parsedTripPlan} location={trip?.location} />
                             </div>
                         </div>
                     )}
@@ -175,7 +175,7 @@ function ViewTrip() {
                                 </div>
                             </div>
                             <div className="p-6">
-                                <Itinerary tripPlan={parsedTripPlan} />
+                                <Itinerary tripPlan={parsedTripPlan} location={trip?.location} />
                             </div>
                         </div>
                     )}
