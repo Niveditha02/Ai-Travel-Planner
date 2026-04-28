@@ -6,6 +6,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import Hotels from '../../components/custom/Hotels';
 import Itinerary from '../../components/custom/Itinerary';
+import TripMap from '../../components/custom/TripMap';
 import { Compass, Calendar, Wallet, Users, MapPin, Home, Sunrise } from 'lucide-react';
 
 function ViewTrip() {
@@ -71,15 +72,9 @@ function ViewTrip() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-            {/* Full width header with image */}
-            <div className="relative h-[400px] w-full overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 to-purple-900/90 z-10"></div>
-                <img
-                    src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600&h=400&fit=crop"
-                    alt="Travel Background"
-                    className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div className="relative z-20 h-full flex flex-col justify-center items-center text-white px-4">
+            {/* Full width header — no image, gradient only */}
+            <div className="relative h-[300px] w-full bg-gradient-to-r from-blue-900 to-purple-900">
+                <div className="h-full flex flex-col justify-center items-center text-white px-4">
                     <div className="bg-white/20 backdrop-blur-md rounded-full p-4 mb-6">
                         <Compass className="w-12 h-12 text-white" />
                     </div>
@@ -150,6 +145,51 @@ function ViewTrip() {
 
                 {/* Trip Content */}
                 <div className="space-y-8 pb-12">
+                    {/* Map Section */}
+                    {parsedTripPlan && (() => {
+                        const allPlaces = [];
+                        const itinerary = parsedTripPlan?.itinerary;
+                        const days = Array.isArray(itinerary)
+                            ? itinerary
+                            : Object.values(itinerary || {});
+                        days.forEach(day => {
+                            const places = day.places || day.plan || day.placesToVisit || [];
+                            places.forEach(p => {
+                                const coords = p?.geoCoordinates || p?.geo_coordinates || p?.coordinates;
+                                let lat, lng;
+                                if (typeof coords === 'string') {
+                                    // Handle "lat, lng" string format
+                                    const parts = coords.split(',').map(s => parseFloat(s.trim()));
+                                    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                                        [lat, lng] = parts;
+                                    }
+                                } else if (typeof coords === 'object' && coords !== null) {
+                                    lat = coords?.latitude ?? coords?.lat;
+                                    lng = coords?.longitude ?? coords?.lng;
+                                }
+                                if (lat && lng) {
+                                    const name = p?.placeName || p?.placename || p?.name || '';
+                                    console.log('Pushing place:', name, lat, lng);
+                                    allPlaces.push({ lat: Number(lat), lng: Number(lng), name });
+                                }
+                            });
+                        });
+                        if (allPlaces.length === 0) return null;
+                        return (
+                            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                                <div className="bg-gradient-to-r from-teal-600 to-teal-700 px-6 py-4">
+                                    <div className="flex items-center gap-3">
+                                        <MapPin className="w-6 h-6 text-white" />
+                                        <h2 className="text-xl font-bold text-white">Interactive Map</h2>
+                                    </div>
+                                </div>
+                                <div className="p-6">
+                                    <TripMap places={allPlaces} zoom={12} />
+                                </div>
+                            </div>
+                        );
+                    })()}
+
                     {/* Hotels Section */}
                     {parsedTripPlan && (
                         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">

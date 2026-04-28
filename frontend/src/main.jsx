@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './index.css'
+import 'leaflet/dist/leaflet.css'
 import App from './App.jsx'
 import CreateTrip from './create-trip';
 import Header from './components/custom/Header';

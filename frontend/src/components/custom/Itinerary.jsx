@@ -2,7 +2,7 @@ import React from 'react';
 import { Clock, Ticket, Star, MapPin, CheckCircle2 } from 'lucide-react';
 import PlaceCard from './PlaceCard';
 
-function Itinerary({ tripPlan, location }) {
+function Itinerary({ tripPlan }) {
     let itineraryDisplay = [];
 
     if (tripPlan?.itinerary) {
@@ -55,7 +55,7 @@ function Itinerary({ tripPlan, location }) {
 
                                         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                                             {places.map((place, idx) => (
-                                                <PlaceCard place={place} location={location} idx={idx} key={idx} />
+                                                <PlaceCard place={place} idx={idx} key={idx} />
                                             ))}
                                         </div>
                                     </div>
