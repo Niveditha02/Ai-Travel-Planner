@@ -4,11 +4,13 @@ const cors = require('cors'); //allows frontend (like react) to talk to backend
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config();
+const aiService = require('./services/aiService');
+const Trip = require('./schemas/TripSchema');
 const tripRoutes = require('./routes/tripRoutes');
 
 //instances
 const app = express();//your server instance
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 10000;
 const uri = process.env.MONGO_URL;
 
 app.use(cors());//allows requests from frontend
@@ -22,7 +24,34 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-app.use('/api', tripRoutes);//All routes inside tripRoutes will start with /api
+// THE MAIN GENERATION ROUTE (Directly in index.js for absolute reliability)
+app.post('/api/generate-trip', async (req, res) => {
+    console.log('📥 POST /api/generate-trip called');
+    try {
+        const { Location, noOfDays, budget, traveler, userEmail } = req.body;
+        if (!Location || !noOfDays || !budget || !traveler || !userEmail) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+        
+        const tripPlan = await aiService.generateTrip({ Location, noOfDays, budget, traveler });
+        const newTrip = new Trip({
+            userEmail,
+            location: Location,
+            noOfDays,
+            budget,
+            traveler,
+            tripPlan
+        });
+        await newTrip.save();
+        
+        res.json({ result: tripPlan, tripId: newTrip._id });
+    } catch (error) {
+        console.error('❌ Generation error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.use('/api', tripRoutes);
 
 //just health checkup is server alive 
 app.get('/', (req, res) => {
