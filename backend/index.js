@@ -21,11 +21,16 @@ app.get('/', (req, res) => {
 });
 
 //boots up you server, runs continuously waiting for your response
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-    mongoose.connect(uri)
-    console.log('DB connected');
-});
+mongoose.connect(uri)
+    .then(() => {
+        console.log('MongoDB Atlas connected successfully!');
+        app.listen(PORT, () => {
+            console.log(`Server is running on http://localhost:${PORT}`);
+        });
+    })
+    .catch((err) => {
+        console.error('MongoDB Connection Error:', err);
+    });
 // mongoose.connect(uri)
 //     .then(() => {
 //         console.log('MongoDB Atlas connected successfully!');

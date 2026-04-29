@@ -29,7 +29,6 @@ const generateTrip = async (formData) => {
             'https://openrouter.ai/api/v1/chat/completions',
             {
                 model: 'meta-llama/llama-3.1-8b-instruct',
-                response_format: { type: 'json_object' },
                 messages: [
                     {
                         role: 'user',
@@ -53,8 +52,18 @@ const generateTrip = async (formData) => {
             throw new Error('Unexpected response format from OpenRouter');
         }
     } catch (error) {
-        console.error('OpenRouter API Error:', error.response ? error.response.data : error.message);
-        throw new Error('Failed to generate trip plan');
+        const errorData = error.response ? error.response.data : error.message;
+        console.error('OpenRouter API Error:', JSON.stringify(errorData, null, 2));
+        
+        // Pass the actual error message from OpenRouter if available
+        let errorMessage = 'Failed to generate trip plan';
+        if (error.response && error.response.data && error.response.data.error) {
+            errorMessage = error.response.data.error.message || errorMessage;
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        throw new Error(errorMessage);
     }
 };
 

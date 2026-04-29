@@ -1,5 +1,3 @@
-//new code
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -7,12 +5,13 @@ import { toast } from 'sonner';
 import Hotels from '../../components/custom/Hotels';
 import Itinerary from '../../components/custom/Itinerary';
 import TripMap from '../../components/custom/TripMap';
-import { Compass, Calendar, Wallet, Users, MapPin, Home, Sunrise } from 'lucide-react';
+import { Compass, Calendar, Wallet, Users, MapPin, Home, Sunrise, ExternalLink } from 'lucide-react';
 
 function ViewTrip() {
     const { tripId } = useParams();
     const [trip, setTrip] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [heroPhoto, setHeroPhoto] = useState('/placeholder.jpg');
 
     useEffect(() => {
         if (tripId) {
@@ -20,11 +19,16 @@ function ViewTrip() {
         }
     }, [tripId]);
 
+    useEffect(() => {
+        if (trip?.location) {
+            GetHeroPhoto();
+        }
+    }, [trip]);
+
     const GetTripData = async () => {
         setLoading(true);
         try {
             const resp = await axios.get(`http://localhost:5000/api/get-trip/${tripId}`);
-            console.log("Fetched Trip:", resp.data);
             setTrip(resp.data);
         } catch (error) {
             console.error("Error fetching trip:", error);
@@ -33,6 +37,17 @@ function ViewTrip() {
             setLoading(false);
         }
     }
+
+    const GetHeroPhoto = async () => {
+        try {
+            const resp = await axios.get(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(trip?.location)}&client_id=${import.meta.env.VITE_UNSPLASH_ACCESS_KEY}`);
+            if (resp.data.results.length > 0) {
+                setHeroPhoto(resp.data.results[0].urls.regular);
+            }
+        } catch (error) {
+            console.error("Hero photo error:", error);
+        }
+    };
 
     if (loading) {
         return (
@@ -70,136 +85,117 @@ function ViewTrip() {
         }
     }
 
+    // Prepare all places for the map
+    const allPlaces = [];
+    if (parsedTripPlan?.itinerary) {
+        const itinerary = parsedTripPlan.itinerary;
+        const days = Array.isArray(itinerary) ? itinerary : Object.values(itinerary);
+        days.forEach(day => {
+            const places = day.places || day.plan || day.placesToVisit || [];
+            places.forEach(p => {
+                const coords = p?.geoCoordinates || p?.geo_coordinates || p?.coordinates;
+                let lat, lng;
+                if (typeof coords === 'string') {
+                    const parts = coords.split(',').map(s => parseFloat(s.trim()));
+                    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) [lat, lng] = parts;
+                } else if (typeof coords === 'object' && coords !== null) {
+                    lat = coords?.latitude ?? coords?.lat;
+                    lng = coords?.longitude ?? coords?.lng;
+                }
+                if (lat && lng) {
+                    allPlaces.push({ lat: Number(lat), lng: Number(lng), name: p?.placeName || p?.placename || p?.name || '' });
+                }
+            });
+        });
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-            {/* Full width header — no image, gradient only */}
-            <div className="relative h-[300px] w-full bg-gradient-to-r from-blue-900 to-purple-900">
-                <div className="h-full flex flex-col justify-center items-center text-white px-4">
-                    <div className="bg-white/20 backdrop-blur-md rounded-full p-4 mb-6">
-                        <Compass className="w-12 h-12 text-white" />
+            {/* Hero Section with Image */}
+            <div className="relative h-[400px] sm:h-[450px] w-full overflow-hidden">
+                <img src={heroPhoto} alt={trip?.location} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col justify-center items-center text-white px-4">
+                    <div className="bg-white/20 backdrop-blur-md rounded-full p-3 sm:p-4 mb-4 sm:mb-6">
+                        <Compass className="w-8 h-8 sm:w-12 sm:h-12 text-white" />
                     </div>
-                    <h1 className="text-5xl md:text-6xl font-bold text-center mb-3">
-                        {trip?.location || "Your Journey"}
-                    </h1>
-                    <p className="text-xl text-white/90 text-center max-w-2xl">
-                        Expertly curated travel experience just for you
-                    </p>
+                    <a 
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip?.location)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-center gap-3 hover:scale-105 transition-transform"
+                    >
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-0 leading-tight px-2 underline decoration-blue-500/50">
+                            {trip?.location || "Your Journey"}
+                        </h1>
+                        <ExternalLink className="w-6 h-6 text-white/70 group-hover:text-white" />
+                    </a>
                 </div>
             </div>
 
             {/* Main Content Container */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-30">
-
-                {/* Trip Details Cards - Fixed Height Single Line */}
-                <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 sm:-mt-16 lg:-mt-20 relative z-30">
+                
+                {/* Trip Details Cards */}
+                <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 mb-8">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {/* Destination - Single Line */}
-                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-red-50 to-red-50/30 rounded-xl min-w-0">
-                            <div className="p-2 bg-red-100 rounded-lg flex-shrink-0">
-                                <MapPin className="w-5 h-5 text-red-600" />
-                            </div>
+                        <div className="flex items-center gap-3 p-3 bg-red-50/50 rounded-xl">
+                            <MapPin className="w-5 h-5 text-red-600" />
                             <div className="flex-1 min-w-0">
-                                <p className="text-xs text-red-600 font-semibold uppercase tracking-wider mb-0.5">Destination</p>
-                                <div className="text-sm font-bold text-slate-800">
-                                    <span className="inline-block max-w-full break-words">
-                                        {trip?.location || "Not set"}
-                                    </span>
-                                </div>
+                                <p className="text-[10px] text-red-600 font-bold uppercase tracking-wider">Destination</p>
+                                <p className="text-sm font-bold text-slate-800 truncate">{trip?.location}</p>
                             </div>
                         </div>
-
-                        {/* Duration - Single Line */}
-                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-blue-50/30 rounded-xl">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                                <Calendar className="w-5 h-5 text-blue-600" />
-                            </div>
+                        <div className="flex items-center gap-3 p-3 bg-blue-50/50 rounded-xl">
+                            <Calendar className="w-5 h-5 text-blue-600" />
                             <div className="flex-1">
-                                <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider">Duration</p>
-                                <p className="text-sm font-bold text-slate-800">{trip?.noOfDays} {trip?.noOfDays === 1 ? 'Day' : 'Days'}</p>
+                                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Duration</p>
+                                <p className="text-sm font-bold text-slate-800">{trip?.noOfDays} Days</p>
                             </div>
                         </div>
-
-                        {/* Budget - Single Line */}
-                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-green-50/30 rounded-xl">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                                <Wallet className="w-5 h-5 text-green-600" />
-                            </div>
+                        <div className="flex items-center gap-3 p-3 bg-green-50/50 rounded-xl">
+                            <Wallet className="w-5 h-5 text-green-600" />
                             <div className="flex-1">
-                                <p className="text-xs text-green-600 font-semibold uppercase tracking-wider">Budget</p>
-                                <p className="text-sm font-bold text-slate-800 capitalize">{trip?.budget || "Not set"}</p>
+                                <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">Budget</p>
+                                <p className="text-sm font-bold text-slate-800 capitalize">{trip?.budget}</p>
                             </div>
                         </div>
-
-                        {/* Travelers - Single Line */}
-                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50 to-purple-50/30 rounded-xl">
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                                <Users className="w-5 h-5 text-purple-600" />
-                            </div>
+                        <div className="flex items-center gap-3 p-3 bg-purple-50/50 rounded-xl">
+                            <Users className="w-5 h-5 text-purple-600" />
                             <div className="flex-1">
-                                <p className="text-xs text-purple-600 font-semibold uppercase tracking-wider">Travelers</p>
+                                <p className="text-[10px] text-purple-600 font-bold uppercase tracking-wider">Travelers</p>
                                 <p className="text-sm font-bold text-slate-800">{trip?.traveler}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                {/* Map Section - Prominent position */}
+                {allPlaces.length > 0 && (
+                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+                        <div className="bg-gradient-to-r from-teal-600 to-teal-700 px-6 py-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <MapPin className="w-6 h-6 text-white" />
+                                <h2 className="text-xl font-bold text-white">Interactive Route Map</h2>
+                            </div>
+                        </div>
+                        <div className="p-4">
+                            <TripMap places={allPlaces} zoom={12} />
+                        </div>
+                    </div>
+                )}
+
                 {/* Trip Content */}
                 <div className="space-y-8 pb-12">
-                    {/* Map Section */}
-                    {parsedTripPlan && (() => {
-                        const allPlaces = [];
-                        const itinerary = parsedTripPlan?.itinerary;
-                        const days = Array.isArray(itinerary)
-                            ? itinerary
-                            : Object.values(itinerary || {});
-                        days.forEach(day => {
-                            const places = day.places || day.plan || day.placesToVisit || [];
-                            places.forEach(p => {
-                                const coords = p?.geoCoordinates || p?.geo_coordinates || p?.coordinates;
-                                let lat, lng;
-                                if (typeof coords === 'string') {
-                                    // Handle "lat, lng" string format
-                                    const parts = coords.split(',').map(s => parseFloat(s.trim()));
-                                    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-                                        [lat, lng] = parts;
-                                    }
-                                } else if (typeof coords === 'object' && coords !== null) {
-                                    lat = coords?.latitude ?? coords?.lat;
-                                    lng = coords?.longitude ?? coords?.lng;
-                                }
-                                if (lat && lng) {
-                                    const name = p?.placeName || p?.placename || p?.name || '';
-                                    console.log('Pushing place:', name, lat, lng);
-                                    allPlaces.push({ lat: Number(lat), lng: Number(lng), name });
-                                }
-                            });
-                        });
-                        if (allPlaces.length === 0) return null;
-                        return (
-                            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                                <div className="bg-gradient-to-r from-teal-600 to-teal-700 px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <MapPin className="w-6 h-6 text-white" />
-                                        <h2 className="text-xl font-bold text-white">Interactive Map</h2>
-                                    </div>
-                                </div>
-                                <div className="p-6">
-                                    <TripMap places={allPlaces} zoom={12} />
-                                </div>
-                            </div>
-                        );
-                    })()}
-
                     {/* Hotels Section */}
                     {parsedTripPlan && (
                         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 sm:px-6 py-3 sm:py-4">
                                 <div className="flex items-center gap-3">
-                                    <Home className="w-6 h-6 text-white" />
-                                    <h2 className="text-xl font-bold text-white">Recommended Hotels</h2>
+                                    <Home className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                    <h2 className="text-base sm:text-xl font-bold text-white">Recommended Hotels</h2>
                                 </div>
                             </div>
-                            <div className="p-6">
+                            <div className="p-4 sm:p-6">
                                 <Hotels tripPlan={parsedTripPlan} location={trip?.location} />
                             </div>
                         </div>
@@ -208,13 +204,13 @@ function ViewTrip() {
                     {/* Itinerary Section */}
                     {parsedTripPlan && (
                         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                            <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-6 py-4">
+                            <div className="bg-gradient-to-r from-orange-600 to-orange-700 px-4 sm:px-6 py-3 sm:py-4">
                                 <div className="flex items-center gap-3">
-                                    <Sunrise className="w-6 h-6 text-white" />
-                                    <h2 className="text-xl font-bold text-white">Daily Itinerary</h2>
+                                    <Sunrise className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                    <h2 className="text-base sm:text-xl font-bold text-white">Daily Itinerary</h2>
                                 </div>
                             </div>
-                            <div className="p-6">
+                            <div className="p-4 sm:p-6">
                                 <Itinerary tripPlan={parsedTripPlan} location={trip?.location} />
                             </div>
                         </div>

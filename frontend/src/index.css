@@ -183,4 +183,5 @@ h2 {
   width: 100%;
   /* Ensures the absolute positioned dropdown aligns correctly */
   position: relative;
+  z-index: 50;
 }

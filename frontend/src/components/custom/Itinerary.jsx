@@ -20,9 +20,9 @@ function Itinerary({ tripPlan }) {
 
     return (
         <div className='animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200'>
-            <div className='flex items-center gap-2 mb-8'>
-                <span className='text-3xl'>🗺️</span>
-                <h2 className='font-extrabold text-2xl text-slate-800 tracking-tight'>Your Day-by-Day Adventure</h2>
+            <div className='flex items-center gap-2 mb-6 sm:mb-8'>
+                <span className='text-2xl sm:text-3xl'>🗺️</span>
+                <h2 className='font-extrabold text-lg sm:text-2xl text-slate-800 tracking-tight'>Your Day-by-Day Adventure</h2>
             </div>
 
             <div className='space-y-12'>
@@ -30,7 +30,7 @@ function Itinerary({ tripPlan }) {
                     const places = dayPlan.places || dayPlan.plan || dayPlan.placesToVisit || [];
 
                     return (
-                        <div key={index} className='relative pl-8 md:pl-0'>
+                        <div key={index} className='relative'>
                             {/* Timeline vertical line */}
                             <div className='absolute left-0 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 to-transparent md:-translate-x-1/2 opacity-20 hidden md:block'></div>
 
@@ -45,15 +45,15 @@ function Itinerary({ tripPlan }) {
 
                                 {/* Day Content */}
                                 <div className='w-full'>
-                                    <div className='bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-4'>
-                                        <div className='flex items-center gap-3 mb-6'>
-                                            <CheckCircle2 className='text-green-500 w-5 h-5' />
-                                            <h3 className='font-black text-xl text-slate-800'>
+                                    <div className='bg-white p-4 sm:p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-4'>
+                                        <div className='flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6'>
+                                            <CheckCircle2 className='text-green-500 w-4 h-4 sm:w-5 sm:h-5 shrink-0' />
+                                            <h3 className='font-black text-base sm:text-xl text-slate-800 leading-snug'>
                                                 {dayPlan.theme || dayPlan.title || `Day ${dayPlan.day || index + 1} Exploration`}
                                             </h3>
                                         </div>
 
-                                        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                                        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6'>
                                             {places.map((place, idx) => (
                                                 <PlaceCard place={place} idx={idx} key={idx} />
                                             ))}
