@@ -28,7 +28,8 @@ function ViewTrip() {
     const GetTripData = async () => {
         setLoading(true);
         try {
-            const resp = await axios.get(`http://localhost:5000/api/get-trip/${tripId}`);
+            const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+            const resp = await axios.get(`${baseUrl}/api/get-trip/${tripId}`);
             setTrip(resp.data);
         } catch (error) {
             console.error("Error fetching trip:", error);
