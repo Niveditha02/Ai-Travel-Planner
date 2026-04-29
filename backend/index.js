@@ -13,6 +13,15 @@ const uri = process.env.MONGO_URL;
 
 app.use(cors());//allows requests from frontend
 app.use(express.json());//lets server read JSON from request body
+
+// Health check route
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        message: 'AI Travel Planner API is online',
+        database: mongoose.connection.readyState === 1 ? 'connected' : 'connecting/disconnected'
+    });
+});
+
 app.use('/api', tripRoutes);//All routes inside tripRoutes will start with /api
 
 //just health checkup is server alive 
@@ -20,13 +29,15 @@ app.get('/', (req, res) => {
     res.send('AI Travel Planner API is running...');
 });
 
-//boots up you server, runs continuously waiting for your response
+// Start server immediately
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
+
+// Connect to MongoDB in the background
 mongoose.connect(uri)
     .then(() => {
         console.log('MongoDB Atlas connected successfully!');
-        app.listen(PORT, () => {
-            console.log(`Server is running on http://localhost:${PORT}`);
-        });
     })
     .catch((err) => {
         console.error('MongoDB Connection Error:', err);
