@@ -27,7 +27,7 @@ services:
     name: ai-travel-planner-web
     runtime: static
     rootDir: frontend
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=optional && npm run build
     staticPublishPath: dist
     envVars:
       - key: VITE_BACKEND_URL
