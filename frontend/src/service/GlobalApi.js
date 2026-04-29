@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const BACKEND = (import.meta.env.VITE_BACKEND_URL || "http://localhost:5000") + "/api";
+const normalizeBaseUrl = (url) => url.replace(/\/+$/, "");
+
+const BACKEND = `${normalizeBaseUrl(import.meta.env.VITE_BACKEND_URL || "http://localhost:10000")}/api`;
 
 export const generateTrip = async (formData) =>
     axios.post(`${BACKEND}/generate-trip`, formData);

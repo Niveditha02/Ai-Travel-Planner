@@ -8,14 +8,39 @@ const Trip = require('../schemas/TripSchema');
  * Expects { Location, noOfDays, budget, traveler } in body
  */
 const handleGenerateTrip = async ({ Location, noOfDays, budget, traveler, userEmail }) => {
-    const tripPlan = await aiService.generateTrip({ Location, noOfDays, budget, traveler });
+    const requestFields = { Location, noOfDays, budget, traveler, userEmail };
+    const missingFields = Object.entries(requestFields)
+        .filter(([, value]) => value === undefined || value === null || value === '')
+        .map(([field]) => field);
+
+    if (missingFields.length > 0) {
+        const error = new Error(`Missing required fields: ${missingFields.join(', ')}`);
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const parsedDays = Number(noOfDays);
+    if (!Number.isInteger(parsedDays) || parsedDays < 1 || parsedDays > 5) {
+        const error = new Error('noOfDays must be a whole number between 1 and 5');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const normalizedTrip = {
+        Location: String(Location).trim(),
+        noOfDays: parsedDays,
+        budget: String(budget).trim(),
+        traveler: String(traveler).trim()
+    };
+
+    const tripPlan = await aiService.generateTrip(normalizedTrip);
     const newTrip = new Trip({
-        userEmail: userEmail,
-        location: Location,
-        noOfDays: noOfDays,
-        budget: budget,
-        traveler: traveler,
-        tripPlan: tripPlan
+        userEmail: String(userEmail).trim(),
+        location: normalizedTrip.Location,
+        noOfDays: normalizedTrip.noOfDays,
+        budget: normalizedTrip.budget,
+        traveler: normalizedTrip.traveler,
+        tripPlan
     });
     await newTrip.save();
     return { result: tripPlan, tripId: newTrip._id };
@@ -27,7 +52,7 @@ router.post('/generate-trip', async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Route error:', error.message);
-        res.status(500).json({ error: error.message });
+        res.status(error.statusCode || 500).json({ error: error.message });
     }
 });
 

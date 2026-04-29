@@ -1,17 +1,11 @@
-import axios from 'axios';
-
-const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000') + '/api/generate-trip';
+import { generateTrip } from './GlobalApi';
 
 export const chatSession = {
   sendMessage: async (formData) => {
     try {
       console.log("Sending request to backend with data:", formData);
       
-      const response = await axios.post(BACKEND_URL, formData, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await generateTrip(formData);
 
       if (response.data) {
         return {

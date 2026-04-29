@@ -6,8 +6,11 @@ const tripSchema = new mongoose.Schema({
     noOfDays: { type: Number, required: true },
     budget: { type: String, required: true },
     traveler: { type: String, required: true },
-    tripPlan: { type: mongoose.Schema.Types.Mixed }, // This can store either String or JSON Object
+    tripPlan: { type: mongoose.Schema.Types.Mixed },
     createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Trip', tripSchema);//Here Trip is a collection name in MongoDB2
+const Trip = mongoose.model('Trip', tripSchema);
+
+module.exports = Trip;
+module.exports.tripSchema = tripSchema;

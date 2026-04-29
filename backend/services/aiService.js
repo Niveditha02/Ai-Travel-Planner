@@ -3,13 +3,39 @@ require('dotenv').config();
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
+const extractJson = (text) => {
+    if (typeof text !== 'string') {
+        return text;
+    }
+
+    const cleaned = text
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
+
+    try {
+        return JSON.parse(cleaned);
+    } catch (_) {
+        const start = cleaned.indexOf('{');
+        const end = cleaned.lastIndexOf('}');
+        if (start !== -1 && end !== -1 && end > start) {
+            return JSON.parse(cleaned.slice(start, end + 1));
+        }
+        throw new Error('AI returned a travel plan that was not valid JSON');
+    }
+};
+
 /**
  * Generates a travel itinerary using OpenRouter API (Llama 3.1 8b)
  * @param {Object} formData - { location, noOfDays, budget, traveler }
- * @returns {Promise<string>} - The AI response text
+ * @returns {Promise<Object>} - The parsed trip plan
  */
 const generateTrip = async (formData) => {
     const { Location, noOfDays, budget, traveler } = formData;
+
+    if (!OPENROUTER_API_KEY) {
+        throw new Error('OPENROUTER_API_KEY is not configured');
+    }
 
     const prompt = `Generate a Travel Plan for Location: ${Location}, for ${noOfDays} Days for ${traveler} with a ${budget} budget.
     Return ONLY a valid JSON object using this exact structure, with no markdown, no conversational text, and no preamble:
@@ -47,7 +73,7 @@ const generateTrip = async (formData) => {
         );
 
         if (response.data && response.data.choices && response.data.choices[0]) {
-            return response.data.choices[0].message.content;
+            return extractJson(response.data.choices[0].message.content);
         } else {
             throw new Error('Unexpected response format from OpenRouter');
         }

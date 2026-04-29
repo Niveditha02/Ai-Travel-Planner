@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { getTrip } from '../../service/GlobalApi';
 import Hotels from '../../components/custom/Hotels';
 import Itinerary from '../../components/custom/Itinerary';
 import TripMap from '../../components/custom/TripMap';
@@ -28,8 +29,7 @@ function ViewTrip() {
     const GetTripData = async () => {
         setLoading(true);
         try {
-            const baseUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
-            const resp = await axios.get(`${baseUrl}/api/get-trip/${tripId}`);
+            const resp = await getTrip(tripId);
             setTrip(resp.data);
         } catch (error) {
             console.error("Error fetching trip:", error);
