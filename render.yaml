@@ -23,13 +23,14 @@ services:
   # ---------------------------------------------------------------------------
   # Frontend: React Vite Static Site
   # ---------------------------------------------------------------------------
-  - type: static
+  - type: web
     name: ai-travel-planner-web
+    runtime: static
     plan: free
     region: oregon
     rootDir: frontend
     buildCommand: npm install && npm run build
-    publishPath: dist
+    staticPublishPath: dist
     envVars:
       - key: VITE_BACKEND_URL
         value: https://ai-travel-planner-api.onrender.com
