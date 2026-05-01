@@ -4,11 +4,25 @@ const PRODUCTION_BACKEND_URL = "https://ai-travel-planner-api.onrender.com";
 const LOCAL_BACKEND_URL = "http://localhost:10000";
 
 const normalizeBaseUrl = (url) => String(url || "").trim().replace(/\/+$/, "");
-const envBackendUrl = normalizeBaseUrl(import.meta.env.VITE_BACKEND_URL);
-const defaultBackendUrl = import.meta.env.PROD ? PRODUCTION_BACKEND_URL : LOCAL_BACKEND_URL;
-const baseBackendUrl = envBackendUrl && envBackendUrl !== "/" ? envBackendUrl : defaultBackendUrl;
+const isAbsoluteHttpUrl = (url) => /^https?:\/\//i.test(url);
+const isCurrentOrigin = (url) =>
+    typeof window !== "undefined" && normalizeBaseUrl(window.location.origin) === url;
 
-const BACKEND = `${baseBackendUrl}/api`;
+const getBackendUrl = () => {
+    const envBackendUrl = normalizeBaseUrl(import.meta.env.VITE_BACKEND_URL);
+
+    if (import.meta.env.PROD) {
+        if (isAbsoluteHttpUrl(envBackendUrl) && !isCurrentOrigin(envBackendUrl)) {
+            return envBackendUrl;
+        }
+
+        return PRODUCTION_BACKEND_URL;
+    }
+
+    return envBackendUrl || LOCAL_BACKEND_URL;
+};
+
+const BACKEND = `${getBackendUrl()}/api`;
 
 export const generateTrip = async (formData) =>
     axios.post(`${BACKEND}/generate-trip`, formData);
