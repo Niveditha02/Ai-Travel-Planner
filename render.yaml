@@ -31,7 +31,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_BACKEND_URL
-        value: https://ai-travel-planner-api.onrender.com
+        value: https://ai-travel-planner-api-340p.onrender.com
       - key: VITE_GEOAPIFY_API_KEY
         sync: false # Set this in Render Dashboard
       - key: VITE_GOOGLE_AUTH_CLIENT_ID

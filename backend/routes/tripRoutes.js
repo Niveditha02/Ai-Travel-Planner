@@ -5,6 +5,7 @@ const Trip = require('../schemas/TripSchema');
 
 /**
  * POST /api/generate-trip
+ * POST /api/generate-plan
  * Expects { Location, noOfDays, budget, traveler } in body
  */
 const handleGenerateTrip = async ({ Location, noOfDays, budget, traveler, userEmail }) => {
@@ -46,7 +47,7 @@ const handleGenerateTrip = async ({ Location, noOfDays, budget, traveler, userEm
     return { result: tripPlan, tripId: newTrip._id };
 };
 
-router.post('/generate-trip', async (req, res) => {
+const generateTripRoute = async (req, res) => {
     try {
         const result = await handleGenerateTrip(req.body);
         res.json(result);
@@ -54,7 +55,10 @@ router.post('/generate-trip', async (req, res) => {
         console.error('Route error:', error.message);
         res.status(error.statusCode || 500).json({ error: error.message });
     }
-});
+};
+
+router.post('/generate-trip', generateTripRoute);
+router.post('/generate-plan', generateTripRoute);
 
 /**
  * GET /api/get-trip/:id

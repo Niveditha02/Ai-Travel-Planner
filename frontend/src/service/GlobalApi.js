@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const PRODUCTION_BACKEND_URL = "https://ai-travel-planner-api.onrender.com";
+const PRODUCTION_BACKEND_URL = "https://ai-travel-planner-api-340p.onrender.com";
 const LOCAL_BACKEND_URL = "http://localhost:10000";
 
 const normalizeBaseUrl = (url) => String(url || "").trim().replace(/\/+$/, "");
@@ -25,7 +25,7 @@ const getBackendUrl = () => {
 const BACKEND = `${getBackendUrl()}/api`;
 
 export const generateTrip = async (formData) =>
-    axios.post(`${BACKEND}/generate-trip`, formData);
+    axios.post(`${BACKEND}/generate-plan`, formData);
 
 export const getTrip = async (tripId) =>
     axios.get(`${BACKEND}/get-trip/${tripId}`);

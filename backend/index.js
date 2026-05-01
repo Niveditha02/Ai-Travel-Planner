@@ -33,6 +33,7 @@ app.use((req, res) => {
         availableRoutes: [
             'GET /api/health',
             'POST /api/generate-trip',
+            'POST /api/generate-plan',
             'GET /api/get-trip/:id'
         ]
     });
