@@ -24,8 +24,11 @@ const getBackendUrl = () => {
 
 const BACKEND = `${getBackendUrl()}/api`;
 
-export const generateTrip = async (formData) =>
-    axios.post(`${BACKEND}/generate-plan`, formData);
+export const generateTrip = async (formData) =>{
+      console.log("🚀 Backend URL:", BACKEND);
+      return axios.post(`${BACKEND}/generate-plan`, formData);
+}
+   
 
 export const getTrip = async (tripId) =>
     axios.get(`${BACKEND}/get-trip/${tripId}`);
